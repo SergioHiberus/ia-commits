@@ -16,7 +16,7 @@ $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/$model:genera
 // ---------------------
 
 if (!$apiKey) {
-    echo "⚠️ ERROR: GEMINI_API_KEY environment variable is not configured. AI verification skipped.\n";
+    echo "️ERROR: GEMINI_API_KEY environment variable is not configured. AI verification skipped.\n";
     exit(0);
 }
 
@@ -75,16 +75,16 @@ try {
 
     if (isset($result['valid']) && $result['valid'] === false) {
         $reason = $result['reason'] ?? 'The format is incorrect.';
-        echo "🚨 AI VALIDATION ERROR: The commit message does NOT meet the standard.\n";
+        echo "AI VALIDATION ERROR: The commit message does NOT meet the standard.\n";
         echo "AI reason: $reason\n";
         exit(1);
     }
 
 } catch (RequestException $e) {
-    echo "⚠️ WARNING: Failed to connect to AI API. Verification skipped.\n";
+    echo "WARNING: Failed to connect to AI API. Verification skipped.\n";
     exit(0);
 } catch (\Exception $e) {
-    echo "⚠️ WARNING: Unexpected error in AI verification. Verification skipped.\n";
+    echo "WARNING: Unexpected error in AI verification. Verification skipped.\n";
     exit(0);
 }
 
