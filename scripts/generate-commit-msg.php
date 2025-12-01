@@ -56,6 +56,7 @@ Diff:
 
 $client = new Client();
 $commitMsgFile = $argv[1] ?? null;
+var_dump($commitMsgFile);
 
 try {
     // Call to Google Gemini API
