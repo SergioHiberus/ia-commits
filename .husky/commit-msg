@@ -1,0 +1,12 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+export PATH="/usr/bin:$PATH"
+
+# Ruta al archivo del mensaje de commit
+COMMIT_MSG_FILE=$1
+
+# Ejecutar el script de verificación en PHP
+php ./scripts/verify-commit.php "$COMMIT_MSG_FILE"
+
+# El código de salida del script de PHP determina si el commit se acepta (0) o se aborta (cualquier otro número)
