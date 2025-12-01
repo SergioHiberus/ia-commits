@@ -1,0 +1,6 @@
+[2025-12-01 08:26:50] Error: GEMINI_API_KEY no encontrada en el archivo .env o no está configurada.
+[2025-12-01 08:29:15] Debug: __DIR__ is /home/smartinezp/PhpstormProjects/ia-commits/scripts
+[2025-12-01 08:29:15] Debug: Expected .env at /home/smartinezp/PhpstormProjects/ia-commits/.env
+[2025-12-01 08:29:15] Debug: File exists? YES
+[2025-12-01 08:29:15] Debug: Env vars keys: 
+[2025-12-01 08:29:15] Error: GEMINI_API_KEY no encontrada en el archivo .env o no está configurada.

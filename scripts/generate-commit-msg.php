@@ -1,23 +1,38 @@
 <?php
 // scripts/generate-commit-msg.php
 
-// Ruta relativa al directorio 'vendor' desde 'scripts'
 require __DIR__ . '/../vendor/autoload.php';
 
+// --- CONFIGURACIÓN DE LOGS ---
+$logFile = __DIR__ . '/../ia-commits.log';
+
+function log_error($message)
+{
+    global $logFile;
+    $timestamp = date('Y-m-d H:i:s');
+    file_put_contents($logFile, "[$timestamp] $message\n", FILE_APPEND);
+}
+
+// --- CARGA DE ENTORNO ---
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->safeLoad();
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 
-// --- CONFIGURACIÓN ---
-$apiKey = $_ENV['GEMINI_API_KEY'] ?? null;
+// --- CONFIGURACIÓN DE API ---
+// Intentamos obtener la key de $_ENV, $_SERVER o getenv()
+$apiKey = $_ENV['GEMINI_API_KEY'] ?? $_SERVER['GEMINI_API_KEY'] ?? getenv('GEMINI_API_KEY');
+
+// Usamos gemini-2.0-flash que está disponible en v1beta
 $model = 'gemini-2.0-flash';
 $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey";
 
-
 if (!$apiKey) {
-    // Si falta la clave, simplemente no generamos el borrador.
+    log_error("Debug: __DIR__ is " . __DIR__);
+    log_error("Debug: Expected .env at " . realpath(__DIR__ . '/..') . "/.env");
+    log_error("Debug: File exists? " . (file_exists(__DIR__ . '/../.env') ? 'YES' : 'NO'));
+    log_error("Debug: Env vars keys: " . implode(', ', array_keys($_ENV)));
+    log_error('Error: GEMINI_API_KEY no encontrada en el archivo .env o no está configurada.');
     exit(0);
 }
 
@@ -57,35 +72,33 @@ try {
                 ]
             ],
             'generationConfig' => [
-                'temperature' => 0.2, // Baja temperatura para respuestas más deterministas
+                'temperature' => 0.2,
                 'maxOutputTokens' => 200,
             ]
         ],
-        'timeout' => 10 // Timeout de 10s para no bloquear el flujo mucho tiempo
+        'timeout' => 10
     ]);
 
     $body = json_decode($response->getBody(), true);
 
-    // Extraer el texto de la respuesta de Gemini
+    if (isset($body['error'])) {
+        $errorMessage = $body['error']['message'] ?? 'Error desconocido en la API.';
+        log_error("Error de la API de Gemini: " . $errorMessage);
+        exit(0);
+    }
+
     $generatedMessage = $body['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
     if ($generatedMessage && $commitMsgFile) {
         $generatedMessage = trim($generatedMessage);
-
-        // 4. Inserción: Anteponer el mensaje generado
-        $header = "# 🤖 Sugerencia de IA (edita o borra según necesites):\n";
-        $footer = "\n# ---------------------------------------------------\n";
-
-        // Leer contenido original (comentarios de git, etc.)
         $originalContent = file_exists($commitMsgFile) ? file_get_contents($commitMsgFile) : '';
-
-        // Escribir: Sugerencia + Separador + Original
-        file_put_contents($commitMsgFile, $generatedMessage . $footer . $originalContent);
+        file_put_contents($commitMsgFile, $generatedMessage . "\n\n# ---------------------------------------------------\n" . $originalContent);
+    } elseif (!$generatedMessage) {
+        log_error("La API no devolvió un mensaje generado. Respuesta recibida: " . json_encode($body));
     }
 
 } catch (\Exception $e) {
-    // Silencio en caso de error para no interrumpir el flujo del usuario
-    // Podríamos loguear a un archivo si fuera necesario
+    log_error("Excepción capturada: " . $e->getMessage());
 }
 
 exit(0);

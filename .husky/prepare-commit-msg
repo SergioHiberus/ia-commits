@@ -1,0 +1,15 @@
+export PATH="/usr/bin:$PATH"
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+# Debug
+echo "prepare-commit-msg hook ejecutado" >> /tmp/hook-debug.log
+echo "COMMIT_MSG_FILE=$COMMIT_MSG_FILE" >> /tmp/hook-debug.log
+echo "COMMIT_SOURCE=$COMMIT_SOURCE" >> /tmp/hook-debug.log
+
+# Solo ejecutar la autogeneración si no es un merge, squash, commit -m, o amend
+if [ -z "$2" ] || [ "$2" = "template" ]; then
+    echo "Ejecutando generate-commit-msg.php" >> /tmp/hook-debug.log
+    php ./scripts/generate-commit-msg.php "$COMMIT_MSG_FILE" 2>> /tmp/hook-debug.log
+fi
