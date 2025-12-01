@@ -1,9 +1,9 @@
 export PATH="/usr/bin:$PATH"
 
-# Ruta al archivo del mensaje de commit
+# Path to the commit message file
 COMMIT_MSG_FILE=$1
 
-# Ejecutar el script de verificación en PHP
+# Execute the PHP verification script
 php ./scripts/verify-commit.php "$COMMIT_MSG_FILE"
 
-# El código de salida del script de PHP determina si el commit se acepta (0) o se aborta (cualquier otro número)
+# The PHP script exit code determines if the commit is accepted (0) or aborted (any other number)

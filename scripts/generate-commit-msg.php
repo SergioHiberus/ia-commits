@@ -3,7 +3,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// --- CONFIGURACIÓN DE LOGS ---
+// --- LOG CONFIGURATION ---
 $logFile = __DIR__ . '/../ia-commits.log';
 
 function log_error($message)
@@ -13,17 +13,17 @@ function log_error($message)
     file_put_contents($logFile, "[$timestamp] $message\n", FILE_APPEND);
 }
 
-// --- CARGA DE ENTORNO ---
+// --- ENVIRONMENT LOADING ---
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->safeLoad();
 
 use GuzzleHttp\Client;
 
-// --- CONFIGURACIÓN DE API ---
-// Intentamos obtener la key de $_ENV, $_SERVER o getenv()
+// --- API CONFIGURATION ---
+// Try to get the key from $_ENV, $_SERVER or getenv()
 $apiKey = $_ENV['GEMINI_API_KEY'] ?? $_SERVER['GEMINI_API_KEY'] ?? getenv('GEMINI_API_KEY');
 
-// Usamos gemini-2.0-flash que está disponible en v1beta
+// Use gemini-2.0-flash which is available in v1beta
 $model = 'gemini-2.0-flash';
 $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey";
 
@@ -32,33 +32,33 @@ if (!$apiKey) {
     log_error("Debug: Expected .env at " . realpath(__DIR__ . '/..') . "/.env");
     log_error("Debug: File exists? " . (file_exists(__DIR__ . '/../.env') ? 'YES' : 'NO'));
     log_error("Debug: Env vars keys: " . implode(', ', array_keys($_ENV)));
-    log_error('Error: GEMINI_API_KEY no encontrada en el archivo .env o no está configurada.');
+    log_error('Error: GEMINI_API_KEY not found in .env file or not configured.');
     exit(0);
 }
 
-// 1. Obtener los cambios (diff)
+// 1. Get the changes (diff)
 $diff = shell_exec('git diff --staged');
 
 if (empty(trim($diff))) {
-    exit(0); // No hay cambios, salimos.
+    exit(0); // No changes, exit.
 }
 
-// 2. Prompt Técnico para la IA
-$prompt = "Actúa como un desarrollador experto. Basado en el siguiente 'diff' de git, genera un mensaje de commit conciso que siga estrictamente el estándar de Conventional Commits (type(scope): description).
-Reglas:
-- Solo devuelve el mensaje de commit.
-- No uses markdown ni bloques de código.
-- Máximo 100 caracteres para la primera línea.
-- Si hay cambios importantes, usa un cuerpo de mensaje breve.
+// 2. Technical prompt for AI
+$prompt = "Act as an expert developer. Based on the following git 'diff', generate a concise commit message that strictly follows the Conventional Commits standard (type(scope): description).
+Rules:
+- Only return the commit message.
+- Do not use markdown or code blocks.
+- Maximum 100 characters for the first line.
+- If there are important changes, use a brief message body.
 
 Diff:
-" . substr($diff, 0, 8000); // Truncar para seguridad
+" . substr($diff, 0, 8000); // Truncate for safety
 
 $client = new Client();
 $commitMsgFile = $argv[1] ?? null;
 
 try {
-    // Llamada a la API de Google Gemini
+    // Call to Google Gemini API
     $response = $client->post($apiUrl, [
         'headers' => [
             'Content-Type' => 'application/json',
@@ -82,8 +82,8 @@ try {
     $body = json_decode($response->getBody(), true);
 
     if (isset($body['error'])) {
-        $errorMessage = $body['error']['message'] ?? 'Error desconocido en la API.';
-        log_error("Error de la API de Gemini: " . $errorMessage);
+        $errorMessage = $body['error']['message'] ?? 'Unknown API error.';
+        log_error("Gemini API error: " . $errorMessage);
         exit(0);
     }
 
@@ -94,11 +94,11 @@ try {
         $originalContent = file_exists($commitMsgFile) ? file_get_contents($commitMsgFile) : '';
         file_put_contents($commitMsgFile, $generatedMessage . "\n\n# ---------------------------------------------------\n" . $originalContent);
     } elseif (!$generatedMessage) {
-        log_error("La API no devolvió un mensaje generado. Respuesta recibida: " . json_encode($body));
+        log_error("API did not return a generated message. Response received: " . json_encode($body));
     }
 
 } catch (\Exception $e) {
-    log_error("Excepción capturada: " . $e->getMessage());
+    log_error("Exception caught: " . $e->getMessage());
 }
 
 exit(0);

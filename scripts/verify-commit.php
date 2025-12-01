@@ -9,38 +9,38 @@ $dotenv->safeLoad();
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
-// --- CONFIGURACIÓN ---
+// --- CONFIGURATION ---
 $apiKey = $_ENV['GEMINI_API_KEY'] ?? null;
 $model = 'gemini-2.0-flash';
 $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey";
 // ---------------------
 
 if (!$apiKey) {
-    echo "⚠️ ERROR: La variable de entorno GEMINI_API_KEY no está configurada. Verificación de IA omitida.\n";
+    echo "⚠️ ERROR: GEMINI_API_KEY environment variable is not configured. AI verification skipped.\n";
     exit(0);
 }
 
-// 1. Obtener el mensaje de commit
+// 1. Get the commit message
 $commitMsgFile = $argv[1] ?? null;
 if (!$commitMsgFile || !file_exists($commitMsgFile)) {
-    echo "⚠️ ADVERTENCIA: No se pudo encontrar el archivo del mensaje de commit. Verificación omitida.\n";
+    echo "⚠️ WARNING: Could not find commit message file. Verification skipped.\n";
     exit(0);
 }
 
 $message = trim(file_get_contents($commitMsgFile));
 
 if (empty($message)) {
-    // Permitir commit vacío si el flujo lo permite
+    // Allow empty commit if the flow permits it
     exit(0);
 }
 
-// 2. Prompt Técnico para la IA
-$prompt = "Evalúa si el siguiente mensaje de commit sigue estrictamente el estándar de Conventional Commits (tipo(scope): descripción). 
-Los tipos válidos son: feat, fix, docs, style, refactor, perf, test, build, ci, chore. 
-Responde ÚNICAMENTE con un objeto JSON. 
-Si es válido, 'valid' es true y 'reason' es nulo. 
-Si es inválido, 'valid' es false y 'reason' explica el error concisamente en español.
-Mensaje a evaluar: '$message'";
+// 2. Technical prompt for AI
+$prompt = "Evaluate if the following commit message strictly follows the Conventional Commits standard (type(scope): description). 
+Valid types are: feat, fix, docs, style, refactor, perf, test, build, ci, chore. 
+Respond ONLY with a JSON object. 
+If valid, 'valid' is true and 'reason' is null. 
+If invalid, 'valid' is false and 'reason' explains the error concisely in English.
+Message to evaluate: '$message'";
 
 $client = new Client();
 
@@ -68,23 +68,23 @@ try {
     $body = json_decode($response->getBody(), true);
     $text = $body['candidates'][0]['content']['parts'][0]['text'] ?? '{}';
 
-    // Limpiar bloques de código markdown si la IA los añade
+    // Clean markdown code blocks if AI adds them
     $text = preg_replace('/^```json\s*|\s*```$/', '', $text);
 
     $result = json_decode($text, true);
 
     if (isset($result['valid']) && $result['valid'] === false) {
-        $reason = $result['reason'] ?? 'El formato es incorrecto.';
-        echo "🚨 ERROR DE VALIDACIÓN POR IA: El mensaje de commit NO cumple el estándar.\n";
-        echo "Razón de la IA: $reason\n";
+        $reason = $result['reason'] ?? 'The format is incorrect.';
+        echo "🚨 AI VALIDATION ERROR: The commit message does NOT meet the standard.\n";
+        echo "AI reason: $reason\n";
         exit(1);
     }
 
 } catch (RequestException $e) {
-    echo "⚠️ ADVERTENCIA: Fallo al conectar con la API de IA. Verificación omitida.\n";
+    echo "⚠️ WARNING: Failed to connect to AI API. Verification skipped.\n";
     exit(0);
 } catch (\Exception $e) {
-    echo "⚠️ ADVERTENCIA: Error inesperado en la verificación de IA. Verificación omitida.\n";
+    echo "⚠️ WARNING: Unexpected error in AI verification. Verification skipped.\n";
     exit(0);
 }
 
