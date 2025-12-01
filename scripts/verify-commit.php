@@ -23,7 +23,7 @@ if (!$apiKey) {
 // 1. Get the commit message
 $commitMsgFile = $argv[1] ?? null;
 if (!$commitMsgFile || !file_exists($commitMsgFile)) {
-    echo "⚠️ WARNING: Could not find commit message file. Verification skipped.\n";
+    echo "WARNING: Could not find commit message file. Verification skipped.\n";
     exit(0);
 }
 
