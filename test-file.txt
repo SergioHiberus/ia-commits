@@ -1,1 +1,1 @@
-test
+This is a change to verify the automation of commit message
