@@ -111,17 +111,18 @@ docs: update installation instructions
 
 ```
 ia-commits/
-├── .husky/                    # Git hooks directory
-│   ├── commit-msg            # Validates commit messages
-│   └── prepare-commit-msg    # Generates commit messages
-├── scripts/                   # PHP scripts
+├── .husky/                      # Git hooks directory
+│   ├── commit-msg               # Validates commit messages
+│   └── prepare-commit-msg       # Generates commit messages
+├── scripts/                     # PHP scripts
 │   ├── generate-commit-msg.php  # AI message generation
-│   ├── verify-commit.php        # Message validation
-│   └── debug-env.php            # Environment debugging
-├── .env                       # Environment variables (not in repo)
-├── composer.json              # PHP dependencies
-├── package.json               # Node.js dependencies
-└── README.md                  # This file
+│   └── verify-commit.php        # Message validation
+├── .env                         # Environment variables (not in repo)
+├── ia-commits.log               # Commits log (not in repo)
+├── composer.json                # PHP dependencies
+├── package.json                 # Node.js dependencies
+├── GEMINI.md                    # Gemini instructions
+└── README.md                    # This file
 ```
 
 ## Configuration
