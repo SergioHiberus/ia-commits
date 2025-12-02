@@ -4,3 +4,8 @@
 [2025-12-01 08:29:15] Debug: File exists? YES
 [2025-12-01 08:29:15] Debug: Env vars keys: 
 [2025-12-01 08:29:15] Error: GEMINI_API_KEY no encontrada en el archivo .env o no está configurada.
+[2025-12-02 11:50:10] [ERROR] GEMINI_API_KEY environment variable is not configured. AI verification skipped.
+[2025-12-02 11:50:52] [INFO] Successfully generated and wrote commit message to .git/COMMIT_EDITMSG.
+[2025-12-02 12:00:55] [INFO] Successfully generated and wrote commit message to .git/COMMIT_EDITMSG.
+[2025-12-02 12:01:21] [ERROR] AI VALIDATION ERROR: The commit message does NOT meet the standard. Reason: The commit message description should describe what the commit does, not what it removes. Also, it seems like the commit adds the file, but the description says it removes it, which is contradictory.
+[2025-12-02 12:01:57] [INFO] Successfully generated and wrote commit message to .git/COMMIT_EDITMSG.
