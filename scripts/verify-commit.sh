@@ -80,7 +80,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # 4. Extract the validation result
-IS_VALID=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text | fromjson | .valid // true')
+IS_VALID=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text | fromjson | .valid // false')
 REASON=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text | fromjson | .reason // "Unknown reason."')
 
 if [ "$IS_VALID" != "true" ]; then
