@@ -3,15 +3,27 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+# --- Logging Setup ---
+LOG_FILE_PATH="$(dirname "$0")/../${LOG_FILE:-"ia-commits.log"}"
+write_log() {
+    local LEVEL=$1
+    local MESSAGE=$2
+    local TIMESTAMP
+    TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$TIMESTAMP] [$LEVEL] $MESSAGE" >> "$LOG_FILE_PATH"
+}
+
 # --- Check for dependencies ---
 if ! command -v jq &> /dev/null
 then
+    write_log "ERROR" "'jq' command not found. Please install jq to use this script."
     echo "ERROR: 'jq' command not found. Please install jq to use this script." >&2
     exit 1
 fi
 
 if ! command -v curl &> /dev/null
 then
+    write_log "ERROR" "'curl' command not found. Please install curl to use this script."
     echo "ERROR: 'curl' command not found. Please install curl to use this script." >&2
     exit 1
 fi
@@ -24,6 +36,7 @@ fi
 
 # Check for API Key
 if [ -z "$GEMINI_API_KEY" ]; then
+    write_log "WARNING" "GEMINI_API_KEY not found. Skipping commit message generation."
     echo "WARNING: GEMINI_API_KEY not found. Skipping commit message generation." >&2
     exit 0
 fi
@@ -39,16 +52,19 @@ TEMPERATURE=${TEMPERATURE:-0.2}
 COMMIT_MSG_FILE=$1
 
 if [ -z "$COMMIT_MSG_FILE" ]; then
+    write_log "ERROR" "Commit message file path not provided."
     echo "ERROR: Commit message file path not provided." >&2
     exit 1
 fi
 
 # --- Main Logic ---
+write_log "INFO" "Starting commit message generation for $COMMIT_MSG_FILE"
 
 # 1. Get the staged git diff
 DIFF=$(git diff --staged)
 
 if [ -z "$DIFF" ]; then
+    write_log "INFO" "No staged changes detected. Exiting."
     echo "No staged changes detected. Exiting." >&2
     exit 0
 fi
@@ -85,6 +101,7 @@ RESPONSE=$(curl -s -f -X POST "$API_URL" \
      -d "$JSON_PAYLOAD" --connect-timeout "$API_TIMEOUT_SECONDS")
 
 if [ $? -ne 0 ]; then
+    write_log "WARNING" "API call failed. Could not generate commit message."
     echo "WARNING: API call failed. Could not generate commit message." >&2
     exit 0
 fi
@@ -96,7 +113,9 @@ if [ -n "$GENERATED_MESSAGE" ]; then
     # Prepend the new message, followed by a separator and the original content
     ORIGINAL_CONTENT=$(cat "$COMMIT_MSG_FILE" 2>/dev/null || echo "")
     echo -e "$GENERATED_MESSAGE\n\n# ------------------------ > AI Suggestion Above < ------------------------\n$ORIGINAL_CONTENT" > "$COMMIT_MSG_FILE"
+    write_log "INFO" "Successfully generated and wrote commit message."
 else
+    write_log "WARNING" "AI did not return a generated message. Full response: $RESPONSE"
     echo "WARNING: AI did not return a generated message." >&2
 fi
 

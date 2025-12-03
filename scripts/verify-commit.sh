@@ -3,15 +3,27 @@
 # Exit immediately if a command exits with a non-zero status.
 # set -e # We need to handle errors manually to show custom messages.
 
+# --- Logging Setup ---
+LOG_FILE_PATH="$(dirname "$0")/../${LOG_FILE:-"ia-commits.log"}"
+write_log() {
+    local LEVEL=$1
+    local MESSAGE=$2
+    local TIMESTAMP
+    TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$TIMESTAMP] [$LEVEL] $MESSAGE" >> "$LOG_FILE_PATH"
+}
+
 # --- Check for dependencies ---
 if ! command -v jq &> /dev/null
 then
+    write_log "ERROR" "'jq' command not found. Please install jq to use this script."
     echo "ERROR: 'jq' command not found. Please install jq to use this script." >&2
     exit 0 # Don't block commit if setup is wrong
 fi
 
 if ! command -v curl &> /dev/null
 then
+    write_log "ERROR" "'curl' command not found. Please install curl to use this script."
     echo "ERROR: 'curl' command not found. Please install curl to use this script." >&2
     exit 0 # Don't block commit if setup is wrong
 fi
@@ -23,6 +35,7 @@ fi
 
 # Check for API Key
 if [ -z "$GEMINI_API_KEY" ]; then
+    write_log "WARNING" "GEMINI_API_KEY not found. AI verification will be skipped."
     echo "WARNING: GEMINI_API_KEY not found. AI verification will be skipped." >&2
     exit 0
 fi
@@ -36,16 +49,19 @@ TEMPERATURE_VERIFY=${TEMPERATURE_VERIFY:-0.1}
 COMMIT_MSG_FILE=$1
 
 if [ -z "$COMMIT_MSG_FILE" ] || [ ! -f "$COMMIT_MSG_FILE" ]; then
+    write_log "WARNING" "Could not find commit message file. Verification skipped."
     echo "WARNING: Could not find commit message file. Verification skipped." >&2
     exit 0
 fi
 
 # --- Main Logic ---
+write_log "INFO" "Starting commit message verification for $COMMIT_MSG_FILE"
 
 # 1. Get the commit message
 MESSAGE=$(cat "$COMMIT_MSG_FILE" | grep -v '^#')
 
 if [ -z "$MESSAGE" ]; then
+    write_log "INFO" "Empty commit message. Verification skipped."
     echo "Empty commit message. Verification skipped." >&2
     exit 0
 fi
@@ -75,6 +91,7 @@ RESPONSE=$(curl -s -f -X POST "$API_URL" \
      -d "$JSON_PAYLOAD" --connect-timeout "$API_TIMEOUT_SECONDS")
 
 if [ $? -ne 0 ]; then
+    write_log "WARNING" "AI API call failed. Verification skipped."
     echo "WARNING: AI API call failed. Verification skipped." >&2
     exit 0
 fi
@@ -84,6 +101,7 @@ IS_VALID=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text | from
 REASON=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text | fromjson | .reason // "Unknown reason."')
 
 if [ "$IS_VALID" != "true" ]; then
+    write_log "ERROR" "AI VALIDATION FAILED: Commit message does not meet the standard. Reason: $REASON"
     echo "------------------------------------------------------------------" >&2
     echo "AI VALIDATION FAILED: The commit message does not meet the standard." >&2
     echo "AI Reason: $REASON" >&2
@@ -91,4 +109,5 @@ if [ "$IS_VALID" != "true" ]; then
     exit 1
 fi
 
+write_log "INFO" "Commit message validated successfully by AI."
 exit 0
