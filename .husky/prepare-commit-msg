@@ -1,15 +1,15 @@
-export PATH="/usr/bin:$PATH"
+#!/bin/bash
+# .husky/prepare-commit-msg
+
+# This hook is executed before the commit message editor is opened.
+# It's used to auto-generate a commit message suggestion.
 
 COMMIT_MSG_FILE=$1
 COMMIT_SOURCE=$2
 
-# Debug
-echo "prepare-commit-msg hook executed" >> /tmp/hook-debug.log
-echo "COMMIT_MSG_FILE=$COMMIT_MSG_FILE" >> /tmp/hook-debug.log
-echo "COMMIT_SOURCE=$COMMIT_SOURCE" >> /tmp/hook-debug.log
-
-# Only run auto-generation if it's not a merge, squash, commit -m, or amend
-if [ -z "$2" ] || [ "$2" = "template" ]; then
-    echo "Executing generate-commit-msg.php" >> /tmp/hook-debug.log
-    php ./scripts/generate-commit-msg.php "$COMMIT_MSG_FILE" 2>> /tmp/hook-debug.log
+# Only run auto-generation if the commit is being created from scratch
+# (i.e., not a merge, squash, amend, etc.)
+if [ -z "$COMMIT_SOURCE" ] || [ "$COMMIT_SOURCE" = "template" ]; then
+    # Execute the bash script to generate the commit message
+    ./scripts/generate-commit-msg.sh "$COMMIT_MSG_FILE"
 fi

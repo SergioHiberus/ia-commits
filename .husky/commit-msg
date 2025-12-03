@@ -1,9 +1,11 @@
-export PATH="/usr/bin:$PATH"
+#!/bin/bash
+# .husky/commit-msg
 
-# Path to the commit message file
+# This hook is used to validate the commit message before the commit is finalized.
+
 COMMIT_MSG_FILE=$1
 
-# Execute the PHP verification script
-php ./scripts/verify-commit.php "$COMMIT_MSG_FILE"
-
-# The PHP script exit code determines if the commit is accepted (0) or aborted (any other number)
+# Execute the bash script to verify the commit message.
+# The script's exit code will determine if the commit is allowed.
+# Exit 0 = OK, Exit 1 = Fail
+./scripts/verify-commit.sh "$COMMIT_MSG_FILE"
