@@ -82,21 +82,6 @@ cp .env.example .env # (If you have .env.example)
 
 Edit `.env` and add your Gemini API key. You can also customize other AI parameters:
 
-```env
-# Mandatory: Your Google Gemini API Key
-GEMINI_API_KEY="your_api_key_here"
-
-# --- Optional AI Configuration ---
-API_MODEL="gemini-1.5-flash"                  # AI model to use (e.g., gemini-1.5-flash, gemini-pro)
-API_BASE_URL="https://generativelanguage.googleapis.com/v1beta/models/" # Gemini API base URL
-API_TIMEOUT_SECONDS=15                        # Timeout for API calls in seconds
-MAX_DIFF_LENGTH=8000                          # Max characters of git diff to send to AI
-MAX_OUTPUT_TOKENS=300                         # Max tokens for AI-generated messages
-TEMPERATURE=0.2                               # AI generation temperature (0.0-1.0)
-TEMPERATURE_VERIFY=0.1                        # AI verification temperature (usually lower for strictness)
-LOG_FILE="ia-commits.log"                     # Log file path relative to project root
-```
-
 ### 5. Initialize Husky hooks
 
 ```bash
@@ -156,7 +141,10 @@ cat ia-commits.log
 
 ```
 ia-commits/
-├── .husky/                      # Git hooks directory (commit-msg, prepare-commit-msg)
+├── .husky/                      # Git hooks directory
+│   ├── _                        # Git hooks
+│   ├── commit-msg               # Validates commit messages
+│   └── prepare-commit-msg       # Generates commit messages
 ├── scripts/                     # Bash scripts
 │   ├── generate-commit-msg.sh   # AI message generation
 │   └── verify-commit.sh         # Message validation
@@ -176,7 +164,6 @@ ia-commits/
    git config core.hooksPath
    # Should output: .husky/
    ```
-   (Note: Husky 7+ changed the hooksPath from `.husky/_` to `.husky/`)
 
 2. Verify hook permissions:
    ```bash
@@ -212,7 +199,7 @@ ISC
 
 ## Author
 
-SergioHiberus
+Sergio Martínez
 
 ## Acknowledgments
 
