@@ -1,11 +1,12 @@
 #!/bin/bash
 # .husky/commit-msg
 
-# This hook is used to validate the commit message before the commit is finalized.
+# This hook is executed before the commit is finalized.
+# It validates the commit message against the Conventional Commits standard.
 
 COMMIT_MSG_FILE=$1
 
-# Execute the bash script to verify the commit message.
+# Execute the script to verify the commit message.
 # The script's exit code will determine if the commit is allowed.
 # Exit 0 = OK, Exit 1 = Fail
 ./scripts/verify-commit.sh "$COMMIT_MSG_FILE"

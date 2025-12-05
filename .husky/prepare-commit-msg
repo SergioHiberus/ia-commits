@@ -2,7 +2,7 @@
 # .husky/prepare-commit-msg
 
 # This hook is executed before the commit message editor is opened.
-# It's used to auto-generate a commit message suggestion.
+# It auto-generates a commit message suggestion based on staged changes.
 
 COMMIT_MSG_FILE=$1
 COMMIT_SOURCE=$2
@@ -10,6 +10,6 @@ COMMIT_SOURCE=$2
 # Only run auto-generation if the commit is being created from scratch
 # (i.e., not a merge, squash, amend, etc.)
 if [ -z "$COMMIT_SOURCE" ] || [ "$COMMIT_SOURCE" = "template" ]; then
-    # Execute the bash script to generate the commit message
+    # Execute the script to generate the commit message
     ./scripts/generate-commit-msg.sh "$COMMIT_MSG_FILE"
 fi

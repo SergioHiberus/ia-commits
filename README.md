@@ -1,18 +1,23 @@
 # IA Commits
 
-AI-powered Git hooks for automatic commit message generation and validation using Google Gemini API. This project helps maintain a clean and consistent Git history by enforcing the Conventional Commits standard.
+AI-powered Git hooks for automatic commit message generation and validation using AI models. This project helps maintain a clean and consistent Git history by enforcing the Conventional Commits standard.
 
 ## Description
 
-This project provides intelligent Git hooks that leverage Google's Gemini AI to:
+This project provides intelligent Git hooks that leverage AI to:
 - **Auto-generate** commit messages following the Conventional Commits standard based on your staged changes (`git diff --staged`).
 - **Validate** commit messages to ensure they comply with the Conventional Commits specification before a commit is finalized.
 
 The hooks integrate seamlessly with your Git workflow, enhancing productivity while maintaining code quality standards.
 
+**Supported AI Providers:**
+- **Google Gemini API** - Cloud-based AI service
+- **Ollama** - Local AI models (phi4, etc.)
+
 ## Features
 
 - **AI-Powered Generation**: Automatically generates meaningful commit messages from git diffs.
+- **Multiple AI Providers**: Choose between Gemini (cloud) or Ollama (local).
 - **Smart Validation**: Validates commit messages against the Conventional Commits format, preventing non-compliant commits.
 - **Cross-Platform (via Git Bash)**: Designed to work on Linux, macOS, and Windows (using Git Bash).
 - **Non-Intrusive**: Only runs when appropriate (skips merges, squashes, and direct `-m` commits for generation).
@@ -27,7 +32,10 @@ The hooks integrate seamlessly with your Git workflow, enhancing productivity wh
 - **`jq`** (command-line JSON processor)
 - **Git**
 - **Husky** (for managing Git hooks - installed via npm)
-- **Google Gemini API Key** ([Get one here](https://aistudio.google.com/app/apikey))
+- **AI Provider** (choose one):
+  - **Google Gemini API Key** ([Get one here](https://aistudio.google.com/app/apikey)), OR
+  - **Ollama** ([Installation guide](https://ollama.ai/))
+
 
 ## Installation
 
@@ -77,12 +85,37 @@ npm install
 Create a `.env` file in the project root. If you don't have one, copy the example:
 
 ```bash
-cp .env.example .env # (If you have .env.example)
+cp .env.example .env
 ```
 
-Edit `.env` and add your Gemini API key. You can also customize other AI parameters:
+Edit `.env` and configure your AI provider:
+
+**Option A: Using Gemini (Cloud)**
+```bash
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your-api-key-here
+API_MODEL=gemini-2.0-flash
+```
+
+**Option B: Using Ollama (Local)**
+```bash
+AI_PROVIDER=ollama
+OLLAMA_URL=http://localhost:11434
+OLLAMA_MODEL=phi4
+```
+
+If using Ollama, you need to set it up first:
+```bash
+# Install Ollama (see https://ollama.ai/)
+# Then pull the phi4 model
+ollama pull phi4
+
+# Or use the provided setup script (starts Ollama container and pulls phi4 model)
+./scripts/setup-ollama.sh
+```
 
 ### 5. Initialize Husky hooks
+
 
 ```bash
 npm run prepare
@@ -147,8 +180,10 @@ ia-commits/
 │   └── prepare-commit-msg       # Generates commit messages
 ├── scripts/                     # Bash scripts
 │   ├── generate-commit-msg.sh   # AI message generation
+│   ├── setup-ollama.sh          # Ollama setup script
 │   └── verify-commit.sh         # Message validation
 ├── .env                         # Environment variables (not tracked by Git)
+├── docker-compose.yml           # Docker configuration for Ollama
 ├── ia-commits.log               # Script execution logs (not tracked by Git)
 ├── package.json                 # Node.js dependencies (for Husky)
 └── README.md                    # This file
@@ -199,7 +234,7 @@ ISC
 
 ## Author
 
-Sergio Martínez
+SergioHiberus
 
 ## Acknowledgments
 
