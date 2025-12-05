@@ -1,2 +1,1 @@
-This is a new change to verify the automation of commit messageTest change to verify Ollama commit generation using phi4 model.Testing consolidated scripts
-Testing optimized scripts
+This is a new change to verify the automation of commit messageTest change to verify Ollama commit generation using phi4 model.
