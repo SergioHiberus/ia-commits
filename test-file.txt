@@ -1,1 +1,1 @@
-This is a change to verify the automation of commit messageTest change to verify Ollama commit generation
+This is a change to verify the automation of commit messageTest change to verify Ollama commit generation using phi4 model.
